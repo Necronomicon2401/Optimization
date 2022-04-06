@@ -20,7 +20,7 @@ public class PlayerShooting : MonoBehaviour
 	public GameObject bulletPrefab;
 
 	float timer;
-	private GameObject[] _bulletsArray;
+	public GameObject[] _bulletsArray;
 
 	void Start()
 	{
@@ -61,7 +61,8 @@ public class PlayerShooting : MonoBehaviour
 
 	void SpawnBullet(Vector3 rotation)
 	{
-		var bullet = Array.Find(_bulletsArray, g => !g.activeSelf);
+		//var bullet = Array.Find(_bulletsArray, g => !g.activeSelf);
+		var bullet = TryToGetBullet();
 		bullet.SetActive(true);
 
 		bullet.transform.position = gunBarrel.position;
@@ -82,12 +83,39 @@ public class PlayerShooting : MonoBehaviour
 			{
 				tempRot.y = (rotation.y + 3 * y) % 360;
 
-				var bullet = Array.Find(_bulletsArray, g => !g.activeSelf);
+				//var bullet = Array.Find(_bulletsArray, g => !g.activeSelf);
+				var bullet = TryToGetBullet();
 				bullet.SetActive(true);
 
 				bullet.transform.position = gunBarrel.position;
 				bullet.transform.rotation = Quaternion.Euler(tempRot);
 			}
+		}
+	}
+
+	GameObject TryToGetBullet()
+	{
+		var bullet = Array.Find(_bulletsArray, g => !g.activeSelf);
+		if (bullet == default (GameObject))
+		{
+			ResizePool();
+			bullet = Array.Find(_bulletsArray, g => !g.activeSelf);
+		}
+
+		return bullet;
+	}
+
+	void ResizePool()
+	{
+		var bulletsLength = _bulletsArray.Length;
+		Array.Resize(ref _bulletsArray, _bulletsArray.Length * 2);
+		for (int i = bulletsLength; i < _bulletsArray.Length; i++)
+		{
+			GameObject bullet = Instantiate(bulletPrefab) as GameObject;
+			
+			bullet.SetActive(false);
+			
+			_bulletsArray[i] = bullet;
 		}
 	}
 
